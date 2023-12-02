@@ -10,6 +10,8 @@ LDAY=$(echo "0${DAY}" | sed 's#^.*\(..\)$#\1#')
 DIR="day${LDAY}"
 if [ ! -d "${DIR}" ]; then
   mkdir "${DIR}"
+  cp ./template/template.py "./${DIR}/${DIR}.py"
+  chmod 755 "./${DIR}/${DIR}.py"
 fi;
 
 COOKIE=$(cat cookie)
