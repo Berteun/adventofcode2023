@@ -22,23 +22,8 @@ def read_input(input_file):
     return seeds, maps
 
 
-def map_seed(s, maps):
-    for m in maps:
-        for (start, end, offset) in m:
-            if start <= s < end:
-                s += offset
-                break
-    return s
-
-
-def part1(seeds, maps):
-    locs = [map_seed(s, maps) for s in seeds]
-    return min(locs)
-
-
 def split(start, end, rstart, rend):
-    overlap = None
-    non_overlap = []
+    overlap, non_overlap = None, []
     if rstart < start:
         non_overlap.append((rstart, min(rend, start)))
     if rend > end:
@@ -48,8 +33,7 @@ def split(start, end, rstart, rend):
     return overlap, non_overlap
 
 
-def map_seed_ranges(s, maps):
-    ranges = [s]
+def map_seed_ranges(ranges, maps):
     for m in maps:
         new_ranges = []
         for (start, end, offset) in m:
@@ -65,17 +49,18 @@ def map_seed_ranges(s, maps):
                     ranges.extend(non_overlap)
                     new_ranges.append((overlap[0] + offset, overlap[1] + offset))
                 i += 1
-        ranges = list(set(new_ranges + [r for r in ranges if r is not None]))
+        ranges = new_ranges + [r for r in ranges if r is not None]
     return ranges
+
+
+def part1(seeds, maps):
+    return part2([s_ for s in seeds for s_ in [s, 1]], maps)
 
 
 def part2(seeds, maps):
     pairs = [(seeds[i], seeds[i] + seeds[i+1]) for i in range(0, len(seeds), 2)]
-    mins = []
-    for pair in pairs:
-        ranges = map_seed_ranges(pair, maps)
-        mins.append(min(ranges)[0])
-    return min(mins)
+    ranges = map_seed_ranges(pairs, maps)
+    return min(ranges)[0]
 
 
 def main(input_file):
