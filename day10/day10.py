@@ -110,13 +110,14 @@ def part2(inp, loop):
             c = fr_p(x, y)
             if c in loop:
                 on_loop.add(c)
-                #print(f"({x},{y}) is on the loop")
                 continue
             crosses = 0
             sx = x
-            while sx >= 1:
+            sy = y
+            while sx >= 1 and sy >= 1:
                 sx -= 1
-                if inp[y][sx] in ('|', '7', 'F') and fr_p(sx, y) in loop:
+                sy -= 1
+                if fr_p(sx, sy) in loop and inp[sy][sx] not in ('L', '7'):
                     crosses += 1
             if crosses % 2 == 0:
                 out_loop.add(c)
