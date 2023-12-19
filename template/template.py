@@ -1,5 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 # -*- coding: utf-8 -*-
+import os.path
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
+import aoc
 
 def parse_line(line):
     return line
@@ -14,7 +19,7 @@ def part1(inp):
     pass
 
 
-def part2(lines):
+def part2(inp):
     pass
 
 
