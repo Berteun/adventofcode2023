@@ -19,7 +19,7 @@ class Stone:
     vy: int
     vz: int
 
-    # x = px + vx t  = (x - px)/vx
+    # x = px + vx = > t = (x - px)/vx
     # y = py + vy t
     # => y = py + vy(x - px)/vx
     # => y = vy/vx * (x - px) + py
@@ -65,11 +65,9 @@ def parse_line(line):
     return Stone(px, py, pz, vx, vy, vz)
 
 
-
 def read_input(input_file):
     return [parse_line(ln)
             for ln in open(input_file).read().rstrip().split('\n')]
-
 
 
 def part1(inp):
@@ -87,37 +85,24 @@ def part1(inp):
 
 
 def part2(inp):
-    sx = z3.Int('sx')
-    sy = z3.Int('sy')
-    sz = z3.Int('sz')
-
-    vx = z3.Int('vx')
-    vy = z3.Int('vy')
-    vz = z3.Int('vz')
-
+    sx, sy, sz = z3.Int('sx'), z3.Int('sy'), z3.Int('sz')
+    vx, vy, vz = z3.Int('vx'), z3.Int('vy'), z3.Int('vz')
 
     s = z3.Solver()
 
-    ts = []
-    for i, stone in enumerate(inp[:10]):
-        t = z3.Int(f't{i}')
-        for ot in ts:
-            s.add(ot != t)
-        ts.append(t)
-        s.add(sx + t * vx == stone.px + stone.vx * t)
-        s.add(sy + t * vy == stone.py + stone.vy * t)
-        s.add(sz + t * vz == stone.pz + stone.vz * t)
-        s.add(t > 0)
+    MAX = 9
+    t = [z3.Int(f't{i}') for i in range(MAX)]
+    s.add(z3.Distinct(t))
+    for i, stone in enumerate(inp[:MAX]):
+        s.add(t[i] > 0)
+        s.add(sx + t[i] * vx == stone.px + stone.vx * t[i])
+        s.add(sy + t[i] * vy == stone.py + stone.vy * t[i])
+        s.add(sz + t[i] * vz == stone.pz + stone.vz * t[i])
 
     print(s.check())
     m = s.model()
-    print(f'sx={m[sx]}')
-    print(f'sy={m[sy]}')
-    print(f'sz={m[sz]}')
-
-    print(f'vx={m[vx]}')
-    print(f'vy={m[vy]}')
-    print(f'vz={m[vz]}')
+    print(f'sx={m[sx]}, sy={m[sy]}, sz={m[sz]}')
+    print(f'vx={m[vx]}, vy={m[vy]}, vz={m[vz]}')
 
     return m.evaluate(sx + sy + sz)
 
