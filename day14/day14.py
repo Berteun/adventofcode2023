@@ -1,22 +1,18 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 # -*- coding: utf-8 -*-
+import os.path
+import sys
 
-def parse_line(line):
-    return line
-
-
-def read_input(input_file):
-    return [list(ln)
-            for ln in open(input_file).read().rstrip().split('\n')]
-
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
+import aoc
 
 def roll_up_once(inp):
     change = False
-    for y in range(1, len(inp)):
-        for x in range(len(inp[y])):
-            if inp[y][x] == 'O' and inp[y - 1][x] == '.':
-                inp[y][x] = '.'
-                inp[y - 1][x] = 'O'
+    for y in range(1, inp.maxy):
+        for x in range(inp.maxx):
+            if inp[x, y] == 'O' and inp[x, y - 1] == '.':
+                inp[x, y] = '.'
+                inp[x, y - 1] = 'O'
                 change = True
     return change
 
@@ -30,38 +26,34 @@ def cycle_up(inp):
 
 def cycle_down(inp):
     change = True
-    inp = inp[::-1]
+    inp.flip()
     while change:
         change = roll_up_once(inp)
-    inp = inp[::-1]
+    inp.flip()
     return inp
 
 
 def cycle_west(inp):
-    inp = transpose(inp)
+    inp.transpose()
     change = True
     while change:
         change = roll_up_once(inp)
-    return transpose(inp)
-
+    inp.transpose()
+    return inp
 
 def cycle_east(inp):
-    inp = transpose(inp)
+    inp.transpose()
     inp = cycle_down(inp)
-    return transpose(inp)
-
-
-def transpose(inp):
-    tr = [list(l) for l in zip(*inp)]
-    return tr
+    inp.transpose()
+    return inp
 
 
 def weight(inp):
     row_weight = len(inp)
     weight = 0
-    for y in range(0, len(inp)):
-        for x in range(len(inp[y])):
-            if inp[y][x] == 'O':
+    for y in inp.rows():
+        for p in inp.row(y):
+            if inp[p] == 'O':
                 weight += row_weight
         row_weight -= 1
     return weight
@@ -88,7 +80,7 @@ def part2(inp):
         inp = full_cycle(inp)
         steps += 1
         weights.append(weight(inp))
-        h = hash(''.join([''.join(r) for r in inp]))
+        h = hash(''.join([''.join(r) for r in inp.grid]))
         if h in d:
             break
         else:
@@ -101,7 +93,7 @@ def part2(inp):
 
 
 def main(input_file):
-    inp = read_input(input_file)
+    inp = aoc.read_grid(input_file)
 
     print(part1(inp))
     print(part2(inp))

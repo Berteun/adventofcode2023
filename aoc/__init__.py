@@ -1,5 +1,19 @@
 import dataclasses
 
+
+class fg:
+    black = "\u001b[30m"
+    red = "\u001b[31m"
+    green = "\u001b[32m"
+    yellow = "\u001b[33m"
+    blue = "\u001b[34m"
+    magenta = "\u001b[35m"
+    cyan = "\u001b[36m"
+    white = "\u001b[37m"
+    reset = "\u001b[0m"
+    bold = "\u001b[1m"
+
+
 def read_input(input_file, line_parser=lambda ln: ln):
     with open(input_file, 'r') as f:
         return [line_parser(ln) for ln in f.read().rstrip().split('\n')]
@@ -9,6 +23,7 @@ def read_input(input_file, line_parser=lambda ln: ln):
 class Point:
     x: int
     y: int
+
     def __add__(self, other: 'Point'):
         return Point(self.x + other.x, self.y + other.y)
 
@@ -50,10 +65,25 @@ class Grid:
             yield Point(x, row)
 
     def transpose(self):
-        self.grid = [list(l) for l in zip(*self.grid)]        
+        self.grid = [list(r) for r in zip(*self.grid)]
 
     def flip(self):
         self.grid.reverse()
+
+    def neighbours(self, point: Point, filter=lambda c: True):
+        x, y = point.x, point.y
+        nbs = []
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nx = x + dx
+            ny = y + dy
+            if 0 <= nx < self.maxx and 0 <= ny < self.maxy:
+                if filter(self.grid[ny][nx]):
+                    nbs.append(Point(nx, ny))
+        return nbs
+
+    def __str__(self):
+        return '\n'.join([''.join(r) for r in self.grid])
+
 
 def read_grid(input_file):
     return Grid(read_input(input_file, lambda ln: list(ln)))
@@ -61,5 +91,3 @@ def read_grid(input_file):
 
 def read_int_grid(input_file):
     return Grid(read_input(input_file, lambda ln: [int(n) for n in list(ln)]))
-
-
