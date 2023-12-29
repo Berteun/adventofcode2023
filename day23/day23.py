@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.12
 # -*- coding: utf-8 -*-
-from collections import deque
+from collections import deque, defaultdict
 
 import os.path
 import sys
@@ -13,6 +13,7 @@ def get_move(nb, cur):
     if nb.x != cur.x:
         return '<' if nb.x < cur.x else '>'
     return '^' if nb.y < cur.y else 'v'
+
 
 def part1(grid):
     start = find_start(grid)
@@ -44,42 +45,61 @@ def part1(grid):
 
     return max_steps
 
+
+def neighbours(grid, start, target):
+    result = defaultdict(set)
+    cur = start
+    stack = deque([(cur, 0, cur, [])])
+    seen = set([cur])
+    while stack:
+        cur, steps, last_intersection, path = stack.popleft()
+        nbs = grid.neighbours(cur, lambda c: c != '#')
+        if len(nbs) > 2 or cur == target:
+            seen.add((cur, cur))
+            result[last_intersection].add((cur, steps))
+            result[cur].add((last_intersection, steps))
+            last_intersection = cur
+            steps = 0
+            path = []
+
+        for n in nbs:
+            key = (last_intersection, n)
+            if key not in seen:
+                seen.add(key)
+                stack.append((n, steps + 1, last_intersection, path + [n]))
+
+    return result
+
+
+def print_grid(grid, seen):
+    for r in grid.rows():
+        for p in grid.row(r):
+            if p in seen:
+                sys.stdout.write(f'{aoc.fg.red}{grid[p]}{aoc.fg.reset}')
+            else:
+                sys.stdout.write(grid[p])
+        sys.stdout.write('\n')
+
+
 # Is this slow? Yes. Does it find the longest path after a while, yes. Just observe the output.
 def part2(grid):
     start = find_start(grid)
     end = find_end(grid)
+    nbs = neighbours(grid, start, end)
     max_steps = -1
-    longest_path = None
-
-    stack = [(start, 0, None, frozenset())]
+    stack = [(start, 0, frozenset([start]))]
     while stack:
-        cur, steps, prev, path = stack.pop()
-
+        cur, steps, path = stack.pop()
         if cur == end and steps > max_steps:
             max_steps = steps
-            longest_path = path
-            print('>', max_steps)
 
-        nbs = grid.neighbours(cur, lambda c: c != '#')
-        if len(nbs) > 2:
-            # Intersection
-            path = path.union(frozenset([cur]))
-        else:
-            path = path
-
-        for nb in grid.neighbours(cur, lambda c: c != '#'):
-            if nb != prev and nb not in path:
-                new_state = (nb, steps + 1, cur, path)
-                stack.append(new_state)
-
-    if False: # Print intersections
-        for r in grid.rows():
-            for p in grid.row(r):
-                if p in longest_path:
-                    sys.stdout.write(f'{aoc.fg.red}{grid[p]}{aoc.fg.reset}')
-                else:
-                    sys.stdout.write(grid[p])
-            sys.stdout.write('\n')
+        nb_set = nbs[cur]
+        for (nb, next_steps) in nb_set:
+            if nb in path:
+                continue
+            new_path = path.union([nb])
+            new_state = (nb, steps + next_steps, new_path)
+            stack.append(new_state)
 
     return max_steps
 
